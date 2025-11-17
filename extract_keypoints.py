@@ -3,7 +3,7 @@
 
 # Usage examples (at bottom of file):
 # - label by folder names ("correct" / "incorrect")
-# - or label by filename containing 'C'/'L' or 'correct'/'incorrect'
+# - or label by filename containing 'C'/'W' or 'correct'/'incorrect'
 
 # The CSV format matches the original notebook: first column 'label', then
 # '<lm>_x', '<lm>_y', '<lm>_z', '<lm>_v' for IMPORTANT_LMS order.
@@ -198,10 +198,10 @@ Batch-extract mediapipe pose landmarks from videos and label frames automaticall
 
 Usage examples (bottom of file):
 - label by folder names ("correct" / "incorrect")
-- or label by filename containing 'C'/'L' or 'correct'/'incorrect'
+-- or label by filename containing 'C'/'W' or 'correct'/'incorrect'
 
 Output CSV format:
-- first column 'label' ('C' or 'L'), then '<lm>_x', '<lm>_y', '<lm>_z', '<lm>_v' for IMPORTANT_LMS order.
+-- first column 'label' ('C' or 'W'), then '<lm>_x', '<lm>_y', '<lm>_z', '<lm>_v' for IMPORTANT_LMS order.
 
 Adjust frame_step, scale_percent, and label_source as needed.
 """
@@ -307,8 +307,8 @@ def infer_label_from_folder(folder_name: str):
     # IMPORTANT: check for 'incorrect' before 'correct' because
     # 'incorrect' contains the substring 'correct' and would match
     # the wrong branch otherwise.
-    if "incorrect" in name or "error" in name or "l" == name or "lean" in name or "wrong" in name:
-        return "L"
+    if "incorrect" in name or "error" in name or "w" == name or "lean" in name or "wrong" in name:
+        return "W"
     if "correct" in name or "c" == name:
         return "C"
     # default: return folder basename (uppercased first char)
@@ -318,16 +318,16 @@ def infer_label_from_folder(folder_name: str):
 def infer_label_from_filename(filename: str):
     low = filename.lower()
     # check for 'incorrect' first (it contains 'correct' as substring)
-    if "incorrect" in low or "_l" in low or "-l" in low or "lean" in low or "_wrong" in low:
-        return "L"
+    if "incorrect" in low or "_w" in low or "-w" in low or "lean" in low or "_wrong" in low:
+        return "W"
     if "correct" in low or "_c" in low or "-c" in low or "_correct" in low:
         return "C"
-    # fallback: check single letter 'c' or 'l' before extension
+    # fallback: check single letter 'c' or 'w' before extension
     base = os.path.splitext(filename)[0]
     if base.endswith("_c") or base.endswith("-c") or base.endswith("c"):
         return "C"
-    if base.endswith("_l") or base.endswith("-l") or base.endswith("l"):
-        return "L"
+    if base.endswith("_w") or base.endswith("-w") or base.endswith("w"):
+        return "W"
     return None
 
 # --- main processing function ---
@@ -402,7 +402,7 @@ def process_single_video(video_path, pose, output_csv, label, frame_step=5, scal
                     export_landmark_row(output_csv, results.pose_landmarks, label)
                     saved_count += 1
                 elif decision == "f":
-                    flipped = "L" if label == "C" else "C"
+                    flipped = "W" if label == "C" else "C"
                     export_landmark_row(output_csv, results.pose_landmarks, flipped)
                     saved_count += 1
                 else:
@@ -481,7 +481,7 @@ def process_single_image(image_path, pose, output_csv, label, scale_percent=60, 
                 export_landmark_row(output_csv, results.pose_landmarks, label)
                 return 1
             if decision == "f":
-                flipped = "L" if label == "C" else "C"
+                flipped = "W" if label == "C" else "C"
                 export_landmark_row(output_csv, results.pose_landmarks, flipped)
                 return 1
             # else: skip
